@@ -1,0 +1,9 @@
+[submodule "eigen"]
+	path = simulator/third_party/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "fmt"]
+	path = simulator/third_party/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "toml"]
+	path = simulator/third_party/toml
+	url = https://github.com/marzer/tomlplusplus.git
