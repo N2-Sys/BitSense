@@ -1,0 +1,526 @@
+[BF] # Bloom Filter
+
+    [BF.para] # parameters
+    num_bits = 2577607
+    num_hash = 5
+
+    [BF.test] # testing metrics
+    sample = 0.3             # Sample 30% records as a sample
+    insert = ["RATE"]        # Metric for insertion
+    lookup = ["RATE", "PRC"] # Metric for looking up
+
+    [BF.data] # testing data
+    data = "../data/records.bin"  # Path to data, being either relative or absolute.
+                                  # But remember to QUOTE it!
+                                  # Relative to `build/`.
+    format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+    # Format of records in data
+    # Grammar:
+    #   | Field Name | Viable Length | Further Constraints                   |
+    #   |:-----------|:--------------|:--------------------------------------|
+    #   | flowkey    | 4, 8, 13      | Specify exactly once                  |
+    #   | timestamp  | 1, 2, 4, 8    | In microseconds. Specify at most once |
+    #   | length     | 1, 2, 4, 8    | Specify at most once                  |
+    #   | padding    | > 0           | None                                  |
+
+
+
+[CM] # Count Min Sketch
+
+  [CM.para]
+  depth = 1
+  width = 114970
+
+  [CM.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [CM.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [CM.ch]
+  cnt_no_ratio = 0.1
+  width_cnt = [5, 14]
+  no_hash = [3]
+
+[CU] # CU Sketch
+
+  [CU.para]
+  depth = 5
+  width = 114970
+
+  [CU.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [CU.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [CU.ch]
+  cnt_no_ratio = 0.9
+  width_cnt = [5, 13]
+  no_hash = [3]
+  ch_cm_r = 4
+  ch_cm_w = 50000
+
+[CS] # Count Sketch
+
+  [CS.para]
+  depth = 1
+  width = 114970
+
+  [CS.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [CS.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [CS.ch]
+  cnt_no_ratio = 0.14356297
+  width_cnt = [4, 15]
+  no_hash = [3]
+
+[HP] # Hash Pipe
+
+  [HP.para]
+  depth = 15
+  width = 8222
+
+  [HP.data]
+  hx_method = "TopK"
+  threshold_heavy_hitter = 1000
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [HP.test]
+  update = ["RATE"]
+  heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
+
+  [HP.ch]
+  cnt_no_ratio = 0.4
+  width_cnt = [5, 20]
+  no_hash = [3]
+  ch_depth = 5
+
+[FlowRadar] # Flow Radar
+
+  [FlowRadar.para]
+    flow_filter_bit = 2380150
+    flow_filter_hash = 30
+    count_table_num = 142510
+    count_table_hash = 5
+  
+  [FlowRadar.data]
+    data = "../data/records.bin"
+    format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+  
+  [FlowRadar.test]
+    update = ["RATE"]
+    decode = ["TIME", "ARE", "AAE", "RATIO", "ACC", "PODF"]
+    decode_podf = 0.01
+
+  [FlowRadar.ch]
+    flow_cnt_no_ratio = 0.000001
+    flow_width_cnt = [4, 2]
+    flow_no_hash = [3]
+    packet_cnt_no_ratio = 0.9
+    packet_width_cnt = [7, 10]
+    packet_no_hash = [3]
+
+
+[CBF] # Counting Bloom Filter
+
+  [CBF.para]
+    num_cnt = 200000
+    num_hash = 3
+    cnt_length = 4
+
+  [CBF.data]
+    data = "../data/records-500K.bin"
+    format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [CBF.test]
+    sample = 0.3
+    insert = ["RATE"]
+    lookup = ["RATE", "TP", "FP", "PRC"]
+
+  [CBF.ch]
+    cnt_no_ratio = 0.51
+    width_cnt = [2, 2]
+    no_hash = [3]
+    cm_r = 4
+    cm_w = 50
+
+[QCBF] # Querying Counting Bloom Filter
+
+  [QCBF.para]
+  num_cnt = 104819
+  num_hash = 2
+  cnt_length = 20
+
+  [QCBF.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [QCBF.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [QCBF.ch]
+  cnt_no_ratio = 0.51
+  width_cnt = [10, 10]
+  no_hash = [3]
+  cm_r = 4
+  cm_w = 50
+
+[NS] # NitroSketch
+
+  [NS.para]
+  depth = 5
+  width = 300090
+
+  [NS.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [NS.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [NS.ch]
+  cnt_no_ratio = 0.9
+  width_cnt = [3, 14]
+  no_hash = [3]
+
+[DT] # Deltoid
+
+  [DT.para]
+  num_hash = 2
+  num_group = 2500
+
+  [DT.data]
+  hx_method = "Percentile"
+  threshold_heavy_hitter = 0.0009173226287898038
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [DT.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+  heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
+
+  [DT.ch]
+  cnt_no_ratio = 0.09
+  width_cnt = [9, 10]
+  no_hash = [3]
+
+[HK] # HeavyKeeper
+
+  [HK.para]
+  depth = 4
+  width = 659
+  num_threshold = 5016
+  b = 1.08
+  hash_table_alpha = 0.01
+
+  [HK.data]
+  hx_method = "TopK"
+  threshold_heavy_hitter = 1000
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [HK.test]
+  update = ["RATE"]
+  heavyhitter = ["TIME", "ARE", "PRC", "RCL", "F1"]
+
+  [HK.ch]
+  cnt_no_ratio = 0.22
+  width_cnt = [7, 10]
+  no_hash = [3]
+  cm_r = 3
+  cm_w = 1500
+
+[WS] # WavingSketch
+
+  [WS.para]
+  bucket_num = 20067
+  heavy_part_length = 4
+
+  [WS.data]
+  hx_method = "TopK"
+  threshold_heavy_hitter = 1000
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [WS.test]
+  update = ["RATE"]
+  heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
+
+  [WS.ch]
+  counter_cnt_no_ratio = 0.51
+  counter_width_cnt = [5, 14]
+  counter_no_hash = [3]
+  counter_cm_r = 4
+  counter_cm_w = 500
+  heavy_cnt_no_ratio = 0.51
+  heavy_width_cnt = [5, 14]
+  heavy_no_hash = [3]
+  heavy_cm_r = 4
+  heavy_cm_w = 500
+
+[CT] # Counter Tree
+
+  [CT.para]
+  bit_num = 6
+  height = 3
+  degree = 2
+  leaves_num = 223545
+  buckets_num_per_flow = 1
+
+  [CT.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [CT.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+[UM] # UnivMon
+
+  [UM.para]
+    depth = 5
+    width = 80001
+  
+  [UM.data]
+    data = "../data/records.bin"
+    format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+    cnt_method = "InPacket"
+
+  [UM.test]
+    update = ["RATE"]
+    query = ["RATE", "ARE", "AAE"]
+
+  [UM.ch]
+    cnt_no_ratio = 0.51
+    width_cnt = [6, 20]
+    no_hash = [3]
+
+[HHUM] # UnivMon
+
+  [HHUM.para]
+    depth = 3
+    width = 59816
+    heap_size = 1490
+    StreamSummary_alpha = 0.01
+  
+  [HHUM.data]
+  hx_method = "TopK"
+  threshold_heavy_hitter = 5000
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [HHUM.test]
+    update = ["RATE"]
+    query = ["RATE", "ARE", "AAE"]
+    heavyhitter = ["TIME", "ARE", "PRC", "RCL", "F1"]
+
+  [HHUM.ch]
+    cnt_no_ratio = 0.1
+    width_cnt = [6, 11]
+    no_hash = [3]
+    ch_cm_r = 9
+    ch_cm_w = 50000
+
+[CB] # Counter Braids
+
+  [CB.para]
+  no_cnt = [2031834, 43407]
+  width_cnt = [7, 11]
+  no_hash = [3, 3]
+
+  [CB.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [CB.test]
+  update = ["RATE"]
+  decode = ["TIME", "ARE", "AAE", "RATIO", "ACC", "PODF"]
+  decode_podf = 0.01
+
+[PR] # PR Sketch
+
+  [PR.para]
+  counter_length = 32000
+  counter_hash_num = 3
+  filter_length = 6548000
+  filter_hash_num = 5
+  phi = 10
+
+  [PR.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [PR.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [PR.ch]
+  cnt_no_ratio = 0.51
+  width_cnt = [6, 12]
+  no_hash = [3]
+  ch_cm_r = 4
+  ch_cm_w = 500
+
+
+[MV] # MV Sketch
+
+  [MV.para]
+  depth = 2
+  width = 14561
+
+  [MV.data]
+  hx_method = "TopK"
+  threshold_heavy_hitter = 3000
+  cnt_method = "InPacket"
+  data = "../data/records-400K.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [MV.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+  heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
+
+  [MV.ch]
+  V_cnt_no_ratio = 0.9
+  V_width_cnt = [5, 14]
+  V_no_hash = [3]
+  C_cnt_no_ratio = 0.9
+  C_width_cnt = [5, 14]
+  C_no_hash = [3]
+  guess_negative_weight = 1
+  guess_positive_weight = 1
+
+[NZE] # NZE
+
+  [NZE.para]
+  HTLength = 10900
+  BFBitsNum = 257120
+  BFHashNum = 5
+  FSdepth = 7
+  FSwidth = 20
+
+  [NZE.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [NZE.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [NZE.ch]
+  cnt_no_ratio = 0.9
+  width_cnt = [10, 14]
+  no_hash = [3]
+
+[SL] # Sketch Learn
+ 
+  [SL.para]
+  depth = 1
+  width = 3000
+ 
+  [SL.data]
+  hx_method = "TopK"
+  threshold_heavy_hitter = 1000
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [SL.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+  heavyhitter = ["TIME", "ARE", "PRC", "RCL", "F1"]
+
+  [SL.ch]
+  cnt_no_ratio = 0.9
+  width_cnt = [17, 11]
+  no_hash = [3]
+
+[PCM] # PCM Sketch
+
+  [PCM.para]
+  word_num = 8001
+  hash_num = 5
+  lg_used_bits = 2
+  pyramid_depth = 15
+
+  [PCM.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [PCM.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+[PCU] # PCU Sketch
+
+  [PCU.para]
+  word_num = 800001
+  hash_num = 5
+  lg_used_bits = 2
+  pyramid_depth = 15
+
+  [PCU.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [PCU.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+
+[ES] # Elastic Sketch
+
+  [ES.para]
+  num_buckets = 80
+  num_per_bucket = 1
+  l_depth = 2
+  l_width = 48957
+
+  [ES.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [ES.test]
+  update = ["RATE"]
+  query = ["RATE", "ARE", "AAE"]
+
+  [ES.ch]
+  cnt_no_ratio = 0.9
+  width_cnt = [5, 14]
+  no_hash = [3]
+  cm_cnt_no_ratio = 0.9
+  cm_width_cnt = [5, 14]
+  cm_no_hash = [3]
+  heavy_cm_r = 4
+  heavy_cm_w = 5000

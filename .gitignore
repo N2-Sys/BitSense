@@ -13,9 +13,6 @@
 tmp.*
 tmp[0-9].*
 
-# Build dir
-build/
-
 # Files for testing
 /test.*
 
