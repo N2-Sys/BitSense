@@ -148,5 +148,5 @@ void CMSketchTest<key_len, T, hash_t>::runTest() {
 
 // Driver instance:
 //      AUTHOR: dromniscience
-//      CONFIG: sketch_config.toml  # with respect to the `src/` directory
+//      CONFIG: config/sketch_config.toml  # with respect to the `simulator/` directory
 //    TEMPLATE: <13, int32_t, Hash::AwareHash>

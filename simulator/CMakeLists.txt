@@ -74,6 +74,7 @@ endif()
 add_executable(parser ${CMAKE_CURRENT_SOURCE_DIR}/src/pcap_parser/parser.cpp)
 target_include_directories(parser PRIVATE ${PCPP_INCLUDE_PATH})
 target_link_libraries(parser ${PCPP} ${PACPP} ${COMPP} ${PCAP} fmt OmniTools)
+set_target_properties(parser PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 # ---- User-defined sketches ----
 

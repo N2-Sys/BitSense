@@ -50,7 +50,7 @@ def main(argv):
     config = pick(a, b, c, "CONFIG")
     template = pick(a, b, c, "TEMPLATE")
     if not config.startswith('/'):
-      config = "../src/" + config
+      config = "../" + config
     file = re.split(r'[\\/]', argv[1])[-1][:-6]
     driver_name = file + "Driver.cpp"
     sketch_name = " ".join(re.findall("[A-Z][^A-Z]*", file))
