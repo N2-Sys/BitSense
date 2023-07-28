@@ -116,9 +116,7 @@ void CMSketchTest<key_len, T, hash_t>::runTest() {
   ///       1. read data
   StreamData data(data_file, format); // specify both data file and data format
   if (!data.succeed())
-    return;
-  std::cout << data.begin()->timestamp << std::endl
-            << (--data.end())->timestamp << std::endl;
+    return; 
 
   Data::GndTruth<key_len, T> gnd_truth;
   gnd_truth.getGroundTruth(data.begin(), data.end(), cnt_method);

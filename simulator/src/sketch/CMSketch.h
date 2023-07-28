@@ -117,6 +117,7 @@ T CMSketch<key_len, T, hash_t>::query(const FlowKey<key_len> &flowkey) const {
             break;
         }
       }
+    std::cout << "Cnt Distrib: ";
     for (int32_t k = 0; k < 32; ++k) {
       std::cout << distrib[k] / depth / width << " ";
       if (distrib[k] == 0.0) {

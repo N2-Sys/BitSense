@@ -104,3 +104,45 @@ add_user_sketch(CM CMSketch)
 
 # BS-optimized Count Min Sketch
 add_user_sketch(BS_CM BSCMSketch)
+
+# Elastic sketch
+add_user_sketch(ES ElasticSketch)
+
+# BS-optimized Elastic Sketch
+add_user_sketch(BS_ES BSElasticSketch)
+
+# Flow Radar
+add_user_sketch(FR FlowRadar)
+
+# BS-optimized Flow Radar
+add_user_sketch(BS_FR BSFlowRadar)
+
+# NitroSketch
+add_user_sketch(NS NitroSketch)
+
+# BS-optimized NitroSketch
+add_user_sketch(BS_NS BSNitroSketch)
+
+# NZE sketch
+add_user_sketch(NZE NZESketch)
+
+# BS-optimized NZE sketch
+add_user_sketch(BS_NZE BSNZESketch)
+
+# PR sketch
+add_user_sketch(PR PRSketch)
+
+# BS-optimized PR sketch
+add_user_sketch(BS_PR BSPRSketch)
+
+# Count sketch
+add_user_sketch(CS CountSketch)
+
+# BS-optimized Count sketch
+add_user_sketch(BS_CS BSCountSketch)
+
+# UnivMon
+add_user_sketch(UM UnivMon)
+
+# BS-optimized UnivMon
+add_user_sketch(BS_UM BSUnivMon)

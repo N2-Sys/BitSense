@@ -143,7 +143,7 @@ T BSCMSketch<key_len, no_layer, T, hash_t>::query(
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
 size_t BSCMSketch<key_len, no_layer, T, hash_t>::size() const {
-  ch->print_rate("COUNT MIN BS");
+  // ch->print_rate("COUNT MIN BS");
   return sizeof(*this)            // instance
          + depth * sizeof(hash_t) // hashing class
          + ch->size();            // ch

@@ -7,7 +7,7 @@
     [BF.test] # testing metrics
     sample = 0.3             # Sample 30% records as a sample
     insert = ["RATE"]        # Metric for insertion
-    lookup = ["RATE", "PRC"] # Metric for looking up
+    lookup = ["PRC"] # Metric for looking up
 
     [BF.data] # testing data
     data = "../data/records.bin"  # Path to data, being either relative or absolute.
@@ -28,7 +28,7 @@
 [CM] # Count Min Sketch
 
   [CM.para]
-  depth = 1
+  depth = 2
   width = 114970
 
   [CM.data]
@@ -37,10 +37,10 @@
   format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
 
   [CM.test]
-  update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  update = []
+  query = ["ARE", "AAE"]
 
-  [CM.ch]
+  [CM.bs]
   cnt_no_ratio = 0.1
   width_cnt = [5, 14]
   no_hash = [3]
@@ -58,9 +58,9 @@
 
   [CU.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [CU.ch]
+  [CU.bs]
   cnt_no_ratio = 0.9
   width_cnt = [5, 13]
   no_hash = [3]
@@ -80,9 +80,9 @@
 
   [CS.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [CS.ch]
+  [CS.bs]
   cnt_no_ratio = 0.14356297
   width_cnt = [4, 15]
   no_hash = [3]
@@ -104,7 +104,7 @@
   update = ["RATE"]
   heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
 
-  [HP.ch]
+  [HP.bs]
   cnt_no_ratio = 0.4
   width_cnt = [5, 20]
   no_hash = [3]
@@ -127,7 +127,7 @@
     decode = ["TIME", "ARE", "AAE", "RATIO", "ACC", "PODF"]
     decode_podf = 0.01
 
-  [FlowRadar.ch]
+  [FlowRadar.bs]
     flow_cnt_no_ratio = 0.000001
     flow_width_cnt = [4, 2]
     flow_no_hash = [3]
@@ -150,9 +150,9 @@
   [CBF.test]
     sample = 0.3
     insert = ["RATE"]
-    lookup = ["RATE", "TP", "FP", "PRC"]
+    lookup = ["TP", "FP", "PRC"]
 
-  [CBF.ch]
+  [CBF.bs]
     cnt_no_ratio = 0.51
     width_cnt = [2, 2]
     no_hash = [3]
@@ -173,9 +173,9 @@
 
   [QCBF.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [QCBF.ch]
+  [QCBF.bs]
   cnt_no_ratio = 0.51
   width_cnt = [10, 10]
   no_hash = [3]
@@ -195,9 +195,9 @@
 
   [NS.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [NS.ch]
+  [NS.bs]
   cnt_no_ratio = 0.9
   width_cnt = [3, 14]
   no_hash = [3]
@@ -217,10 +217,10 @@
 
   [DT.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
   heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
 
-  [DT.ch]
+  [DT.bs]
   cnt_no_ratio = 0.09
   width_cnt = [9, 10]
   no_hash = [3]
@@ -245,7 +245,7 @@
   update = ["RATE"]
   heavyhitter = ["TIME", "ARE", "PRC", "RCL", "F1"]
 
-  [HK.ch]
+  [HK.bs]
   cnt_no_ratio = 0.22
   width_cnt = [7, 10]
   no_hash = [3]
@@ -269,7 +269,7 @@
   update = ["RATE"]
   heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
 
-  [WS.ch]
+  [WS.bs]
   counter_cnt_no_ratio = 0.51
   counter_width_cnt = [5, 14]
   counter_no_hash = [3]
@@ -297,7 +297,7 @@
 
   [CT.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
 [UM] # UnivMon
 
@@ -312,9 +312,9 @@
 
   [UM.test]
     update = ["RATE"]
-    query = ["RATE", "ARE", "AAE"]
+    query = ["ARE", "AAE"]
 
-  [UM.ch]
+  [UM.bs]
     cnt_no_ratio = 0.51
     width_cnt = [6, 20]
     no_hash = [3]
@@ -336,10 +336,10 @@
 
   [HHUM.test]
     update = ["RATE"]
-    query = ["RATE", "ARE", "AAE"]
+    query = ["ARE", "AAE"]
     heavyhitter = ["TIME", "ARE", "PRC", "RCL", "F1"]
 
-  [HHUM.ch]
+  [HHUM.bs]
     cnt_no_ratio = 0.1
     width_cnt = [6, 11]
     no_hash = [3]
@@ -379,9 +379,9 @@
 
   [PR.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [PR.ch]
+  [PR.bs]
   cnt_no_ratio = 0.51
   width_cnt = [6, 12]
   no_hash = [3]
@@ -404,10 +404,10 @@
 
   [MV.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
   heavyhitter = ["TIME", "ARE", "PRC", "RCL"]
 
-  [MV.ch]
+  [MV.bs]
   V_cnt_no_ratio = 0.9
   V_width_cnt = [5, 14]
   V_no_hash = [3]
@@ -433,9 +433,9 @@
 
   [NZE.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [NZE.ch]
+  [NZE.bs]
   cnt_no_ratio = 0.9
   width_cnt = [10, 14]
   no_hash = [3]
@@ -455,10 +455,10 @@
 
   [SL.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
   heavyhitter = ["TIME", "ARE", "PRC", "RCL", "F1"]
 
-  [SL.ch]
+  [SL.bs]
   cnt_no_ratio = 0.9
   width_cnt = [17, 11]
   no_hash = [3]
@@ -478,7 +478,7 @@
 
   [PCM.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
 [PCU] # PCU Sketch
 
@@ -495,7 +495,7 @@
 
   [PCU.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
 
 [ES] # Elastic Sketch
@@ -513,9 +513,9 @@
 
   [ES.test]
   update = ["RATE"]
-  query = ["RATE", "ARE", "AAE"]
+  query = ["ARE", "AAE"]
 
-  [ES.ch]
+  [ES.bs]
   cnt_no_ratio = 0.9
   width_cnt = [5, 14]
   no_hash = [3]

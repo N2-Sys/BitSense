@@ -12,7 +12,7 @@
 #define BSCM_PARA_PATH "CM.para"
 #define BSCM_TEST_PATH "CM.test"
 #define BSCM_DATA_PATH "CM.data"
-#define BSCM_BS_PATH "CM.ch"
+#define BSCM_BS_PATH "CM.bs"
 
 namespace OmniSketch::Test {
 
