@@ -1,7 +1,7 @@
 /**
- * @file hierarchy.h
+ * @file BitSense.h
  * @author dromniscience (you@domain.com)
- * @brief Counter Hierarchy
+ * @brief BitSense (initially called Counter Hierarchy in the code)
  *
  * @copyright Copyright (c) 2022
  *
@@ -24,27 +24,24 @@
 
 namespace OmniSketch::Sketch {
 /**
- * @brief Use the counter hierarchy to better save space while preserving
+ * @brief Use BitSense to better save space while preserving
  * accuracy!
  *
- * @tparam no_layer   Number of layers in CH
- * @tparam T          Counter Type of CH
+ * @tparam no_layer   Number of layers in BS
+ * @tparam T          Counter Type of BS
  * @tparam hash_t     Hashing classes used internally
  *
  * @note
- * - In CH, counters are serialized, so it is the user's job to convert the
+ * - In BS, counters are serialized, so it is the user's job to convert the
  * index of a possibly multi-dimensional array into a unique serial number.
- * Since CH uses 0-based array internally, this serial number is chosen to
+ * Since BS uses 0-based array internally, this serial number is chosen to
  * have type `size_t`.
- * - CH uses **lazy update policy**. That is, only when you try to get a counter
- * value in CH will the updates genuinely be propagated to the higher layers
+ * - BS uses **lazy update policy**. That is, only when you try to get a counter
+ * value in BS will the updates genuinely be propagated to the higher layers
  * and then decoded.
- * - Note that CH cannot bring better accuracy. Ideally, if the first layer in
- * CH never overflows, your sketch achieves the same accuracy as does without
- * it.
  *
  * @warning
- * - To apply CH, make sure values of the original counters are always
+ * - To apply BS, make sure values of the original counters are always
  * non-negative during the whole process, though negative update is OK.
  * (i.e., only *cash register case* and the *non-negative case*
  * in *turnstile model* are allowed) Otherwise, errors of decoding can be
@@ -53,7 +50,7 @@ namespace OmniSketch::Sketch {
  * prime.
  */
 template <int32_t no_layer, typename T, typename hash_t = Hash::AwareHash>
-class CounterHierarchy {
+class BitSense {
 private:
   using CarryOver = std::map<std::size_t, T>;
   /**
@@ -80,7 +77,7 @@ private:
   std::vector<hash_t> *hash_fns;
 #endif
   /**
-   * @brief counters in CH
+   * @brief counters in BS
    *
    */
   std::vector<Util::DynamicIntX<T>> *cnt_array;
@@ -198,7 +195,7 @@ public:
    * - Sum of `width_cnt` exceeds `sizeof(T) * 8`. This constraint is imposed to
    * guarantee proper shifting of counters when decoding.
    */
-  CounterHierarchy(const std::vector<size_t> &no_cnt,
+  BitSense(const std::vector<size_t> &no_cnt,
                    const std::vector<size_t> &width_cnt,
                    const std::vector<size_t> &no_hash,
                    bool use_negative_counters = false,
@@ -208,7 +205,7 @@ public:
    * @brief Destructor
    *
    */
-  ~CounterHierarchy();
+  ~BitSense();
   /**
    * @brief Update a counter
    *
@@ -222,7 +219,7 @@ public:
    */
   void updateCnt(size_t index, T val);
   /**
-   * @brief Get the value of counters in CH
+   * @brief Get the value of counters in BS
    *
    * @details An overflow exception would be thrown if there is an overflow at
    * the last layer. An out-of-range exception would be thrown if the index is
@@ -235,29 +232,29 @@ public:
   /**
    * @brief Get the original value of counters.
    *
-   * @details I.e., the value of the counter without CH.
+   * @details I.e., the value of the counter without BS.
    *
    * @param index Serialized index of a counter. It is the user's job to get
    * the index serialized in advance.
    */
   T getOriginalCnt(size_t index) const;
   /**
-   * @brief Size of CH.
+   * @brief Size of BS.
    *
    */
   size_t size() const;
   /**
-   * @brief Size of counters without CH.
+   * @brief Size of counters without BS.
    *
    */
   size_t originalSize() const;
   /**
-   * @brief Reset CH.
+   * @brief Reset BS.
    *
    */
   void clear();
   /**
-   * @brief Get the value of status bits in CH
+   * @brief Get the value of status bits in BS
    *
    */
   uint8_t getStatus(int32_t idx) const;
@@ -296,7 +293,7 @@ namespace OmniSketch::Sketch {
 #ifdef SKIP_HASH
 template <int32_t no_layer, typename T, typename hash_t>
 int32_t
-CounterHierarchy<no_layer, T, hash_t>::my_hash(int32_t layer, int32_t hash_id,
+BitSense<no_layer, T, hash_t>::my_hash(int32_t layer, int32_t hash_id,
                                                int32_t counter_id) const {
   int32_t offset = (6 * hash_id + 6);
   int32_t mask = (1 << offset) - 1;
@@ -307,7 +304,7 @@ CounterHierarchy<no_layer, T, hash_t>::my_hash(int32_t layer, int32_t hash_id,
 #endif
 
 template <int32_t no_layer, typename T, typename hash_t>
-void CounterHierarchy<no_layer, T, hash_t>::updateSegment(const int32_t layer,
+void BitSense<no_layer, T, hash_t>::updateSegment(const int32_t layer,
                                                           const size_t index,
                                                           const T val) {
   access_time++;
@@ -324,7 +321,7 @@ void CounterHierarchy<no_layer, T, hash_t>::updateSegment(const int32_t layer,
     }
     if (layer == no_layer - 1) { // last layer
       throw std::overflow_error(
-          "Counter overflow at the last layer in CH, overflow by " +
+          "Counter overflow at the last layer in BS, overflow by " +
           std::to_string(overflow) + ".");
     } else { // hash to upper-layer counters
       for (size_t i = 0; i < no_hash[layer]; i++) {
@@ -340,7 +337,7 @@ void CounterHierarchy<no_layer, T, hash_t>::updateSegment(const int32_t layer,
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-void CounterHierarchy<no_layer, T, hash_t>::highest_bit_add(int32_t val) {
+void BitSense<no_layer, T, hash_t>::highest_bit_add(int32_t val) {
   int32_t tmp = (val >= 0) ? 1 : -1;
   for (int t = 0; t < no_layer; t++) {
     for (int i = 0; i < no_cnt[t]; i++) {
@@ -350,8 +347,8 @@ void CounterHierarchy<no_layer, T, hash_t>::highest_bit_add(int32_t val) {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-typename CounterHierarchy<no_layer, T, hash_t>::CarryOver
-CounterHierarchy<no_layer, T, hash_t>::updateLayer(const int32_t layer,
+typename BitSense<no_layer, T, hash_t>::CarryOver
+BitSense<no_layer, T, hash_t>::updateLayer(const int32_t layer,
                                                    CarryOver &&updates) {
   // A time-saving optimization
   if (layer > 0 && !updates.empty()) {
@@ -366,7 +363,7 @@ CounterHierarchy<no_layer, T, hash_t>::updateLayer(const int32_t layer,
       status_bits[layer][kv.first] = true;
       if (layer == no_layer - 1) { // last layer
         throw std::overflow_error(
-            "Counter overflow at the last layer in CH, overflow by " +
+            "Counter overflow at the last layer in BS, overflow by " +
             std::to_string(overflow) + ".");
       } else { // hash to upper-layer counters
         for (size_t i = 0; i < no_hash[layer]; i++) {
@@ -384,7 +381,7 @@ CounterHierarchy<no_layer, T, hash_t>::updateLayer(const int32_t layer,
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-std::vector<double> CounterHierarchy<no_layer, T, hash_t>::decodeLayer(
+std::vector<double> BitSense<no_layer, T, hash_t>::decodeLayer(
     const int32_t layer, std::vector<double> &&higher) const {
   // make sure the size match
   if (higher.size() != no_cnt[layer + 1]) {
@@ -524,7 +521,7 @@ std::vector<double> CounterHierarchy<no_layer, T, hash_t>::decodeLayer(
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-CounterHierarchy<no_layer, T, hash_t>::CounterHierarchy(
+BitSense<no_layer, T, hash_t>::BitSense(
     const std::vector<size_t> &no_cnt, const std::vector<size_t> &width_cnt,
     const std::vector<size_t> &no_hash, bool use_negative_counters,
     bool use_cm_sketch_, size_t cm_row_, size_t cm_width_)
@@ -648,7 +645,7 @@ CounterHierarchy<no_layer, T, hash_t>::CounterHierarchy(
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-CounterHierarchy<no_layer, T, hash_t>::~CounterHierarchy() {
+BitSense<no_layer, T, hash_t>::~BitSense() {
 #ifndef SKIP_HASH
   if (hash_fns)
     delete[] hash_fns;
@@ -663,12 +660,12 @@ CounterHierarchy<no_layer, T, hash_t>::~CounterHierarchy() {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-uint8_t CounterHierarchy<no_layer, T, hash_t>::getStatus(int32_t idx) const {
+uint8_t BitSense<no_layer, T, hash_t>::getStatus(int32_t idx) const {
   return status_bits[0].test(idx);
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-void CounterHierarchy<no_layer, T, hash_t>::updateCnt(size_t index, T val) {
+void BitSense<no_layer, T, hash_t>::updateCnt(size_t index, T val) {
   if (index >= no_cnt[0]) {
     throw std::out_of_range("Index Out of Range: Should be in [0, " +
                             std::to_string(no_cnt[0] - 1) + "], but got " +
@@ -687,7 +684,7 @@ void CounterHierarchy<no_layer, T, hash_t>::updateCnt(size_t index, T val) {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-T CounterHierarchy<no_layer, T, hash_t>::getCnt(size_t index) {
+T BitSense<no_layer, T, hash_t>::getCnt(size_t index) {
   if (index >= no_cnt[0]) {
     throw std::out_of_range("Index Out of Range: Should be in [0, " +
                             std::to_string(no_cnt[0] - 1) + "], but got " +
@@ -797,7 +794,7 @@ T CounterHierarchy<no_layer, T, hash_t>::getCnt(size_t index) {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-void CounterHierarchy<no_layer, T, hash_t>::resetCnt(size_t index, T val) {
+void BitSense<no_layer, T, hash_t>::resetCnt(size_t index, T val) {
   T est = getEstCnt(index, 0);
   updateSegment(0, index, -est);
   total_update_time++;
@@ -808,7 +805,7 @@ void CounterHierarchy<no_layer, T, hash_t>::resetCnt(size_t index, T val) {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-T CounterHierarchy<no_layer, T, hash_t>::getOriginalCnt(size_t index) const {
+T BitSense<no_layer, T, hash_t>::getOriginalCnt(size_t index) const {
   if (index >= no_cnt[0]) {
     throw std::out_of_range("Index Out of Range: Should be in [0, " +
                             std::to_string(no_cnt[0] - 1) + "], but got " +
@@ -818,7 +815,7 @@ T CounterHierarchy<no_layer, T, hash_t>::getOriginalCnt(size_t index) const {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-size_t CounterHierarchy<no_layer, T, hash_t>::size() const {
+size_t BitSense<no_layer, T, hash_t>::size() const {
   // counters + status bits
   size_t tot = 0; // first in bits
   for (int32_t i = 0; i < no_layer; ++i) {
@@ -844,12 +841,12 @@ size_t CounterHierarchy<no_layer, T, hash_t>::size() const {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-size_t CounterHierarchy<no_layer, T, hash_t>::originalSize() const {
+size_t BitSense<no_layer, T, hash_t>::originalSize() const {
   return sizeof(T) * no_cnt[0];
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-void CounterHierarchy<no_layer, T, hash_t>::clear() {
+void BitSense<no_layer, T, hash_t>::clear() {
   // reset counters
   for (int32_t i = 0; i < no_layer; ++i) {
     cnt_array[i] = std::vector<Util::DynamicIntX<T>>(no_cnt[i], width_cnt[i]);
@@ -889,7 +886,7 @@ void CounterHierarchy<no_layer, T, hash_t>::clear() {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-void CounterHierarchy<no_layer, T, hash_t>::print_rate(const char *name) {
+void BitSense<no_layer, T, hash_t>::print_rate(const char *name) {
   size_t length = no_cnt[0];
   int32_t overflow_num = 0;
   int32_t correct_num = 0;
@@ -919,7 +916,7 @@ void CounterHierarchy<no_layer, T, hash_t>::print_rate(const char *name) {
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-int CounterHierarchy<no_layer, T, hash_t>::guess_sign(int32_t negative_weight,
+int BitSense<no_layer, T, hash_t>::guess_sign(int32_t negative_weight,
                                                       int32_t positive_weight,
                                                       int32_t idx,
                                                       int32_t layer) {
@@ -965,7 +962,7 @@ int CounterHierarchy<no_layer, T, hash_t>::guess_sign(int32_t negative_weight,
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-T CounterHierarchy<no_layer, T, hash_t>::get_current_cnt(size_t idx) {
+T BitSense<no_layer, T, hash_t>::get_current_cnt(size_t idx) {
   if (idx >= no_cnt[0]) {
     throw std::out_of_range("Index Out of Range: Should be in [0, " +
                             std::to_string(no_cnt[0] - 1) + "], but got " +
@@ -985,7 +982,7 @@ T CounterHierarchy<no_layer, T, hash_t>::get_current_cnt(size_t idx) {
   return cnt_array[0][idx].getVal();
 }
 template <int32_t no_layer, typename T, typename hash_t>
-T CounterHierarchy<no_layer, T, hash_t>::getTotalCnt(int32_t idx,
+T BitSense<no_layer, T, hash_t>::getTotalCnt(int32_t idx,
                                                      int32_t layer) {
   T ans = 0;
   if (!status_bits[layer][idx]) {
@@ -1007,7 +1004,7 @@ T CounterHierarchy<no_layer, T, hash_t>::getTotalCnt(int32_t idx,
 }
 
 template <int32_t no_layer, typename T, typename hash_t>
-T CounterHierarchy<no_layer, T, hash_t>::getEstCnt(int32_t idx, int32_t layer) {
+T BitSense<no_layer, T, hash_t>::getEstCnt(int32_t idx, int32_t layer) {
   if (!use_cm_sketch) {
     if (!status_bits[layer][idx]) {
       return cnt_array[layer][idx].getVal();

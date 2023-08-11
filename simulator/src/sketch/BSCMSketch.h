@@ -1,7 +1,7 @@
 /**
- * @file CHCMSketch.h
- * @author dromniscience (you@domain.com)
- * @brief Implementation of Count Min Sketch with Counter Hierarchy
+ * @file BSCMSketch.h
+ * @author dromniscience (dr_abc@pku.edu.cn)
+ * @brief Implementation of Count Min Sketch with BitSense
  *
  * @copyright Copyright (c) 2022
  *
@@ -9,21 +9,21 @@
 #pragma once
 
 #include <common/hash.h>
-#include <common/hierarchy.h>
+#include <common/bitsense.h>
 #include <common/sketch.h>
 
 namespace OmniSketch::Sketch {
 /**
- * @brief Count Min Sketch with CH
+ * @brief Count Min Sketch with BS
  *
  * @tparam key_len  length of flowkey
- * @tparam no_layer layer of CH
+ * @tparam no_layer layer of BS
  * @tparam T        type of the counter
  * @tparam hash_t   hashing class
  */
 template <int32_t key_len, int32_t no_layer, typename T,
           typename hash_t = Hash::AwareHash>
-class CHCMSketch : public SketchBase<key_len, T> {
+class BSCMSketch : public SketchBase<key_len, T> {
 private:
   int32_t depth;
   int32_t width;
@@ -33,10 +33,10 @@ private:
   std::vector<size_t> no_hash;
 
   hash_t *hash_fns;
-  CounterHierarchy<no_layer, T, hash_t> *ch;
+  BitSense<no_layer, T, hash_t> *ch;
 
-  CHCMSketch(const CHCMSketch &) = delete;
-  CHCMSketch(CHCMSketch &&) = delete;
+  BSCMSketch(const BSCMSketch &) = delete;
+  BSCMSketch(BSCMSketch &&) = delete;
 
 public:
   /**
@@ -50,14 +50,14 @@ public:
    * @param no_hash     #hash between adjacent layers
    *
    */
-  CHCMSketch(int32_t depth, int32_t width, double cnt_no_ratio,
+  BSCMSketch(int32_t depth, int32_t width, double cnt_no_ratio,
              const std::vector<size_t> &width_cnt,
              const std::vector<size_t> &no_hash);
   /**
    * @brief Release the pointer
    *
    */
-  ~CHCMSketch();
+  ~BSCMSketch();
   /**
    * @brief Update a flowkey with certain value
    *
@@ -91,7 +91,7 @@ public:
 namespace OmniSketch::Sketch {
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
-CHCMSketch<key_len, no_layer, T, hash_t>::CHCMSketch(
+BSCMSketch<key_len, no_layer, T, hash_t>::BSCMSketch(
     int32_t depth, int32_t width, double cnt_no_ratio,
     const std::vector<size_t> &width_cnt, const std::vector<size_t> &no_hash)
     : depth(depth), width(Util::NextPrime(width)), ch(nullptr),
@@ -101,7 +101,7 @@ CHCMSketch<key_len, no_layer, T, hash_t>::CHCMSketch(
   // check ratio
   if (cnt_no_ratio <= 0.0 || cnt_no_ratio >= 1.0) {
     throw std::out_of_range("Out of Range: Ratio of #counters of adjacent "
-                            "layers in CH should be in (0, 1), but got " +
+                            "layers in BS should be in (0, 1), but got " +
                             std::to_string(cnt_no_ratio) + " instead.");
   }
   // prepare no_cnt
@@ -110,19 +110,19 @@ CHCMSketch<key_len, no_layer, T, hash_t>::CHCMSketch(
     size_t last_layer = no_cnt.back();
     no_cnt.push_back(Util::NextPrime(std::ceil(last_layer * cnt_no_ratio)));
   }
-  // CH
-  ch = new CounterHierarchy<no_layer, T, hash_t>(no_cnt, this->width_cnt,
+  // BS
+  ch = new BitSense<no_layer, T, hash_t>(no_cnt, this->width_cnt,
                                                  this->no_hash, true);
 }
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
-CHCMSketch<key_len, no_layer, T, hash_t>::~CHCMSketch() {
+BSCMSketch<key_len, no_layer, T, hash_t>::~BSCMSketch() {
   delete[] hash_fns;
   delete[] ch;
 }
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
-void CHCMSketch<key_len, no_layer, T, hash_t>::update(
+void BSCMSketch<key_len, no_layer, T, hash_t>::update(
     const FlowKey<key_len> &flowkey, T val) {
   for (int32_t i = 0; i < depth; ++i) {
     int32_t index = hash_fns[i](flowkey) % width;
@@ -131,7 +131,7 @@ void CHCMSketch<key_len, no_layer, T, hash_t>::update(
 }
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
-T CHCMSketch<key_len, no_layer, T, hash_t>::query(
+T BSCMSketch<key_len, no_layer, T, hash_t>::query(
     const FlowKey<key_len> &flowkey) const {
   T min_val = std::numeric_limits<T>::max();
   for (int32_t i = 0; i < depth; ++i) {
@@ -142,15 +142,15 @@ T CHCMSketch<key_len, no_layer, T, hash_t>::query(
 }
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
-size_t CHCMSketch<key_len, no_layer, T, hash_t>::size() const {
-  ch->print_rate("COUNT MIN CH");
+size_t BSCMSketch<key_len, no_layer, T, hash_t>::size() const {
+  ch->print_rate("COUNT MIN BS");
   return sizeof(*this)            // instance
          + depth * sizeof(hash_t) // hashing class
          + ch->size();            // ch
 }
 
 template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
-void CHCMSketch<key_len, no_layer, T, hash_t>::clear() {
+void BSCMSketch<key_len, no_layer, T, hash_t>::clear() {
   ch->clear();
 }
 

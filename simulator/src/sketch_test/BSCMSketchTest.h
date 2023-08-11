@@ -1,28 +1,28 @@
 /**
- * @file QueryingCountingBloomFilterTest.h
+ * @file BS_CMSketchTest.h
  * @author dromniscience (you@domain.com)
- * @brief Test Querying Counting Bloom Filter Sketch
+ * @brief Test BS-optimized Count Min Sketch
  *
  * @copyright Copyright (c) 2022
  *
  */
-#pragma once
-
 #include <common/test.h>
-#include <sketch/QueryingCountingBloomFilter.h>
+#include <sketch/BSCMSketch.h>
 
-#define QCBF_PARA_PATH "QCBF.para"
-#define QCBF_TEST_PATH "QCBF.test"
-#define QCBF_DATA_PATH "QCBF.data"
+#define BSCM_PARA_PATH "CM.para"
+#define BSCM_TEST_PATH "CM.test"
+#define BSCM_DATA_PATH "CM.data"
+#define BSCM_BS_PATH "CM.ch"
 
 namespace OmniSketch::Test {
 
 /**
- * @brief Testing class for Querying Counting Bloom Filter Sketch
+ * @brief Testing class for Count Min Sketch
  *
  */
-template <int32_t key_len, typename T, typename hash_t = Hash::AwareHash>
-class QueryingCountingBloomFilterTest : public TestBase<key_len, T> {
+template <int32_t key_len, int32_t no_layer, typename T,
+          typename hash_t = Hash::AwareHash>
+class BSCMSketchTest : public TestBase<key_len, T> {
   using TestBase<key_len, T>::config_file;
 
 public:
@@ -34,11 +34,12 @@ public:
    * - path to the node that contains metrics of interest (concatenated with
    * '.')
    */
-  QueryingCountingBloomFilterTest(const std::string_view config_file)
-      : TestBase<key_len, T>("Querying Counting Bloom Filter", config_file, QCBF_TEST_PATH) {}
+  BSCMSketchTest(const std::string_view config_file)
+      : TestBase<key_len, T>("Count Min with BS", config_file, BSCM_TEST_PATH) {
+  }
 
   /**
-   * @brief Test Bloom Filter
+   * @brief Test BS-optimized Count Min Sketch
    * @details An overriden method
    */
   void runTest() override;
@@ -54,8 +55,8 @@ public:
 
 namespace OmniSketch::Test {
 
-template <int32_t key_len, typename T, typename hash_t>
-void QueryingCountingBloomFilterTest<key_len, T, hash_t>::runTest() {
+template <int32_t key_len, int32_t no_layer, typename T, typename hash_t>
+void BSCMSketchTest<key_len, no_layer, T, hash_t>::runTest() {
   /**
    * @brief shorthand for convenience
    *
@@ -64,12 +65,13 @@ void QueryingCountingBloomFilterTest<key_len, T, hash_t>::runTest() {
 
   /// Part I.
   ///   Parse the config file
-  ///
-  /// Step i.  First we list the variables to parse, namely:
-  ///
-  int32_t num_cnt, num_hash, cnt_length;  // sketch config
+  int32_t depth, width;
+  double cnt_no_ratio;
+  std::vector<size_t> width_cnt, no_hash;
+
   std::string data_file; // data config
   toml::array arr;       // shortly we will convert it to format
+
   /// Step ii. Open the config file
   Util::ConfigParser parser(config_file);
   if (!parser.succeed()) {
@@ -77,27 +79,35 @@ void QueryingCountingBloomFilterTest<key_len, T, hash_t>::runTest() {
   }
   /// Step iii. Set the working node of the parser.
   parser.setWorkingNode(
-      QCBF_PARA_PATH); // do not forget to to enclose it with braces
+      BSCM_PARA_PATH); // do not forget to to enclose it with braces
   /// Step iv. Parse num_bits and num_hash
-  if (!parser.parseConfig(num_cnt, "num_cnt"))
+  if (!parser.parseConfig(depth, "depth"))
     return;
-  if (!parser.parseConfig(num_hash, "num_hash"))
-    return;
-  if (!parser.parseConfig(cnt_length, "cnt_length"))
+  if (!parser.parseConfig(width, "width"))
     return;
   /// Step v. Move to the data node
-  parser.setWorkingNode(QCBF_DATA_PATH);
+  parser.setWorkingNode(BSCM_DATA_PATH);
   /// Step vi. Parse data and format
   if (!parser.parseConfig(data_file, "data"))
     return;
   if (!parser.parseConfig(arr, "format"))
     return;
+  /// Step vi. Move to the BS node
+  parser.setWorkingNode(BSCM_BS_PATH);
+  if (!parser.parseConfig(cnt_no_ratio, "cnt_no_ratio"))
+    return;
+  if (!parser.parseConfig(width_cnt, "width_cnt"))
+    return;
+  if (!parser.parseConfig(no_hash, "no_hash"))
+    return;
+
   Data::DataFormat format(arr); // conver from toml::array to Data::DataFormat
   /// [Optional] User-defined rules
   ///
   /// Step vii. Parse Cnt Method.
   std::string method;
   Data::CntMethod cnt_method = Data::InLength;
+  parser.setWorkingNode(BSCM_DATA_PATH);
   if (!parser.parseConfig(method, "cnt_method"))
     return;
   if (!method.compare("InPacket")) {
@@ -109,9 +119,13 @@ void QueryingCountingBloomFilterTest<key_len, T, hash_t>::runTest() {
   ///
   /// Step i. Initialize a sketch
   std::unique_ptr<Sketch::SketchBase<key_len, T>> ptr(
-      new Sketch::QueryingCountingBloomFilter<key_len, T, hash_t>(num_cnt, num_hash, cnt_length));
+      new Sketch::BSCMSketch<key_len, no_layer, T, hash_t>(
+          depth, width, cnt_no_ratio, width_cnt, no_hash));
   /// remember that the left ptr must point to the base class in order to call
   /// the methods in it
+
+  this->testSize(ptr);
+  this->show();
 
   /// Step ii. Get ground truth
   ///
@@ -136,16 +150,31 @@ void QueryingCountingBloomFilterTest<key_len, T, hash_t>::runTest() {
   ///        3. show metrics
   this->show();
 
+  printf("\n  CM DEPTH: %d\n  CM WIDTH: %d\n", depth, width);
+  printf("  WIDTH_CNT: [");
+  for(int i = 0; i < width_cnt.size();i++)
+  {
+    printf("%ld", width_cnt[i]);
+    if(i != width_cnt.size() - 1)
+    {
+      printf(", ");
+    }
+  }
+  printf("]\n");
+  printf("  RATIO: %lf\n\n", cnt_no_ratio);
+  printf("============================================\n");
+
   return;
 }
 
 } // namespace OmniSketch::Test
 
-#undef QCBF_PARA_PATH
-#undef QCBF_TEST_PATH
-#undef QCBF_DATA_PATH
+#undef BSCM_PARA_PATH
+#undef BSCM_TEST_PATH
+#undef BSCM_DATA_PATH
+#undef BSCM_BS_PATH
 
 // Driver instance:
 //      AUTHOR: dromniscience
 //      CONFIG: sketch_config.toml  # with respect to the `src/` directory
-//    TEMPLATE: <13, int32_t, Hash::AwareHash>
+//    TEMPLATE: <13, 2, int32_t, Hash::AwareHash>

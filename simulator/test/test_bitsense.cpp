@@ -1,13 +1,13 @@
 /**
- * @file test_hierarchy.cpp
- * @author dromniscience (you@domain.com)
- * @brief Test Counter Hierarchy
+ * @file test_bitsense.cpp
+ * @author dromniscience (dr_abc@pku.edu.cn)
+ * @brief Test BitSense
  *
  * @copyright Copyright (c) 2022
  *
  */
 #include "test_factory.h"
-#include <common/hierarchy.h>
+#include <common/bitsense.h>
 
 /**
  * @cond TEST
@@ -168,7 +168,7 @@ void TestHierarchy() {
   const std::vector<size_t> no_cnt = {7, 5, 3};
   const std::vector<size_t> width_cnt = {10, 10, 10};
   const std::vector<size_t> no_hash = {2, 2};
-  CounterHierarchy<3, int32_t, TestHash> ch(no_cnt, width_cnt, no_hash);
+  BitSense<3, int32_t, TestHash> ch(no_cnt, width_cnt, no_hash);
 
   // normal case
   try {
@@ -276,51 +276,51 @@ void TestHierarchy() {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<1, int32_t, TestHash> ch({}, {3}, {});
+    BitSense<1, int32_t, TestHash> ch({}, {3}, {});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<2, int32_t, TestHash> ch({3, 5}, {3}, {2});
+    BitSense<2, int32_t, TestHash> ch({3, 5}, {3}, {2});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<2, int32_t, TestHash> ch({3, 5}, {3, 4}, {2, 3, 4});
+    BitSense<2, int32_t, TestHash> ch({3, 5}, {3, 4}, {2, 3, 4});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<2, int32_t, TestHash> ch({3, 5}, {30, 3}, {2});
+    BitSense<2, int32_t, TestHash> ch({3, 5}, {30, 3}, {2});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<2, int32_t, TestHash> ch(
+    BitSense<2, int32_t, TestHash> ch(
         {100, 5}, {20, std::numeric_limits<size_t>::max()}, {2});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<3, int32_t, TestHash> ch({100, 50, 0}, {20, 5, 5}, {2, 3});
+    BitSense<3, int32_t, TestHash> ch({100, 50, 0}, {20, 5, 5}, {2, 3});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<3, int32_t, TestHash> ch({100, 50, 10}, {20, 0, 5},
+    BitSense<3, int32_t, TestHash> ch({100, 50, 10}, {20, 0, 5},
                                               {2, 3});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
     VERIFY_EXCEPTION(exp);
   }
   try {
-    CounterHierarchy<3, int32_t, TestHash> ch({100, 50, 10}, {20, 5, 5},
+    BitSense<3, int32_t, TestHash> ch({100, 50, 10}, {20, 5, 5},
                                               {0, 3});
     SET_FAILURE_FLAG;
   } catch (const std::exception &exp) {
@@ -328,7 +328,7 @@ void TestHierarchy() {
   }
 }
 
-OMNISKETCH_DECLARE_TEST(hierarchy) {
+OMNISKETCH_DECLARE_TEST(bitsense) {
   for (int i = 0; i < g_repeat; ++i) {
     TestDynamicIntX();
     TestHierarchy();

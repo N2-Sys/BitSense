@@ -1,6 +1,6 @@
 /**
  * @file CMSketch.h
- * @author dromniscience (you@domain.com)
+ * @author dromniscience (dr_abc@pku.edu.cn)
  * @brief Implementation of Count Min Sketch
  *
  * @copyright Copyright (c) 2022
