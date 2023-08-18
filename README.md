@@ -31,18 +31,18 @@ We require the following dependencies to run BitSense simulator programs on Linu
 | **PcapPlusPlus** (>=21.05) | Method 1. Build from [source](https://pcapplusplus.github.io/docs/install#build-from-source) using its default configuration and installation directory <br />Method 2. `brew install pcapplusplus`  | `brew install pcapplusplus` |
 
 Simulator programs also make use of three third-party libraries, namely [eigen](https://gitlab.com/libeigen/eigen), [fmt](https://github.com/fmtlib/fmt), and [tomlplusplus](https://github.com/marzer/tomlplusplus). They are maintained as git submodules. Hence, don't forget to clone them with `git submodule update --init`.
-Besides, make sure your C++ compiler supports **C++17** and python interpreter is **3.7** or newer to enable library features.
+Besides, make sure your C++ compiler supports C++17 and python interpreter version is at least 3.7 to enable library features.
 
 ### Build the Simulator
 The following shell script builds the simulator. As long as the dependencies are correctly installed, the script should run successfully.
-```
+```shell
 mkdir -p simulator/build && cd simulator/build
 cmake ..
 make
 ```
 To ensure each simulator module is built successfully, you can run `ctest` in the `simulator/build` directory. 
 You should see the following line in the testing output.
-```
+```text
 100% tests passed, 0 tests failed out of 8
 ```
 After executing the script, you should see a number of executable files in the `bin/` directory.
