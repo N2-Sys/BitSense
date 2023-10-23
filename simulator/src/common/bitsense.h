@@ -16,6 +16,7 @@
 #include <Eigen/SparseCore>
 #include <boost/dynamic_bitset.hpp>
 #include <map>
+#include <chrono>
 
 #define RECORD_ACCESS_TIME
 #define TEST_DECODE_TIME
@@ -737,7 +738,7 @@ T BitSense<no_layer, T, hash_t>::getCnt(size_t index) {
     MY_TOCK = std::chrono::steady_clock::now();
     MY_TIMER = std::chrono::duration_cast<std::chrono::microseconds>(MY_TOCK -
                                                                      MY_TICK);
-    printf("\nDECODE COST %lldms\n", static_cast<int64_t>(MY_TIMER.count()));
+    printf("\nDECODE COST %jdms\n", static_cast<intmax_t>(MY_TIMER.count()));
 #endif
     printf("\nDECODER END!\n");
     have_decoded = true;

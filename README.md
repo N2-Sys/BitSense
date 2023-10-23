@@ -31,7 +31,7 @@ We require the following dependencies to run BitSense simulator programs on Linu
 | **PcapPlusPlus** (>=21.05) | Method 1. Build from [source](https://pcapplusplus.github.io/docs/install#build-from-source) using its default configuration and installation directory <br />Method 2. `brew install pcapplusplus`  | `brew install pcapplusplus` |
 
 Simulator programs also make use of three third-party libraries, namely [eigen](https://gitlab.com/libeigen/eigen), [fmt](https://github.com/fmtlib/fmt), and [tomlplusplus](https://github.com/marzer/tomlplusplus). They are maintained as git submodules. Hence, don't forget to clone them with `git submodule update --init`.
-Besides, make sure your C++ compiler supports C++17 and python interpreter version is at least 3.7 to enable library features.
+Besides, make sure your C++ compiler supports C++17 and the python interpreter version is at least 3.7 to enable essential library features.
 
 ### Build the Simulator
 The following shell script builds the simulator. As long as the dependencies are correctly installed, the script should run successfully.
@@ -63,14 +63,56 @@ The above command will read the default runtime configuration (which is in `simu
 You may encounter an error `FATAL| Failed to open record file ../data/records.bin. @data.h:769` at the first run. This is because the default data stream is `../data/records.bin`, but the file nonexists. We provide a sample stream parsed from a truncated CAIDA trace (much smaller than the trace used in the paper). You can download this file from the [Google drive](https://drive.google.com/file/d/1o7YQdNVhQyAAe_naWXBGB7mOYQVmNF5T/view?usp=sharing) (or the [PKU disk](https://disk.pku.edu.cn:443/link/4BF2174500E4481C298BB1E9793CE85F) as a backup) and unzip it to `simluation/data`. Now any sketch framework should run smoothly.
 
 ### Sketch Configuration
-Each sketch framework needs a number of configuration parameters to run, e.g., height and width and input data stream. The default config file (i.e., `simulator/config/sketch_config.toml`) has already specified a sample configuration for each sketch.
-Note that the configuration of a sketch named `XXX` is listed in the table named [XXX] in the config file. Table [XXX] contains four subtables, each holding a number of parameters.
+Each sketch framework needs a number of configuration parameters to run, e.g., height, width, and input data stream. The default config file (i.e., `simulator/config/sketch_config.toml`) has already specified a sample configuration for each sketch.
+Note that the configuration of a sketch named `XXX` is listed in the table named [XXX] in the config file. Table [XXX] contains four subtables, each holding a number of parameters as follows.
 | Subtable | Description | Example | Meaning of the Example |
 |---|---|---|---|
 | [XXX.para] | Sketch-specific configuration | [CM.para]<br>  depth = 3<br>width = 10000| Configure a Count-Min sketch with 3 rows and 10,000 counters in each row |
 | [XXX.data] | Input-related configuration | [CM.data]<br>data = "../data/records.bin"| Read the input data stream from the file `../data/records.bin` |
 | [XXX.test] | Output-related configuration | [CM.test]<br>query = ["ARE", "AAE"] | Output the values of two metrics, namely `ARE` and `AAE`, after querying per-flow size |
 | [XXX.bs] | BitSense-related configuration | [CM.bs]<br>cnt_no_ratio = 0.1435<br>width_cnt = [8, 16]<br>no_hash = [3] | Set the BitSense compression ratio to 0.1435, the width of counters on Layer 0 (and 1) as 8 bits (and 16 bits), and the number of hash function as 3 |
+
+### Input Data
+
+BitSense uses a more succinct representation of streaming packets than PCAP files as input, which only stores the flowkey, captured timestamp, and packet length of each packet and strips off payloads and unrelated metadata.
+This customized representation has an extension name as the `.bin` file.
+
+To obtain such a representation, we provide a parser that turns `.pcap` files into `.bin` files with user-defined rules in `simulation/src/pcap_parser`.
+After successfully building the simulator, it is compiled into an executable called `parser` in the `simulator/bin` directory.
+In fact, the default data stream in `simulator/data` is pre-parsed from a CAIDA trace using this `parser`.
+
+Now we introduce how to specify user-defined rules in `parser`. You may skip this part if you simply want to run the simulator up.
+All tunable settings of the parser are in the config file `parser.toml` under `simulator/config`, where you can find detailed captions of each setting. Here we only provide an overview in the following table.
+
+| Function | Associated Setting(s) | Valid Value Types |
+|---|---|---|
+| Stream truncation | `flow_count` & `packet_count` | Integer |
+| Packet filtration | `filter` | Classic BPF expression |
+| Input / Output | `input` & `output` | File path |
+| Output mode | `mode` | `bin`, `pcap`, and more (See below) |
+| Record Format | `format` | See below |
+
+*Output mode* controls the intended file type. `bin` is for BitSense to read at runtime. `pcap` produces another PCAP file (e.g., with some unwanted packets removed).
+`txt` is for human read only, and should **NOT** be specified on large PCAP files to avoid massive outputs. `null` indicates no output.
+
+*Record format* defines the byte-level layout of each record representing a captured packet.
+It specifies which fields are in a record, their lengths, and order. An example record format runs as follows.
+```toml
+format = [["flowkey", "padding", "timestamp", "length", "padding"],
+          [13,        3,         8,           2,        6]]
+```
+It says that each record in the output has $13+3+8+2+6=32$ bytes, with the first 13 bytes being the flowkey, then following a 3-byte padding and so on.
+There are four distinct fields, with their name, valid length, and further constraints documented in the following table.
+| Field Name | Valid Length  | Further Constraints                   |
+|:-----------|:--------------|:--------------------------------------|
+| flowkey    | 4, 8, 13      | Specify exactly once                  |
+| timestamp  | 1, 2, 4, 8    | In microseconds. Specify at most once |
+| length     | 1, 2, 4, 8    | Specify at most once                  |
+| padding    | > 0           | None                                  |
+
+Make sure the record format you specified to `parser` when generating the `.bin` file is the same as the `format` you specified to BitSense in the `[XXX.data]` subtable of each sketch framework.
+The provided config files of the `parser` and all the sketches use the example record format above.
+
 
 ### Result Screenshots
 
@@ -93,11 +135,13 @@ We provide a simplified version of BitSense data plane P4 programs, which includ
 Make sure your Barefoot SDE version is at least 9.9.0.
 
 ### Deployment
-We provide a simplified version of data plane programs that can be compiled and loaded onto a single Tofino switch since BitSense is a switch-local optimization.
+We provide a simplified version of data plane programs that can be compiled and loaded onto a single Tofino switch.
+Since BitSense is a switch-local optimization, it does not matter what topology is in use, and the simplest topology, i.e., two hosts connected by a switch, suffices as long as the hosts can emit and receive packets in multiple flows.
 The control plane program has the same decoding logic as the simulator, and we omit it.
 
 For the two prototype sketches (CM and SL), the original sketch algorithms are in the file `cm.p4` and `sl.p4`, respectively, while the BitSense version of the sketches are in the file `bs_cm.p4` and `bs_sl.p4`, respectively.
-The function of these programs mainly include parsing the TCP/IP header, measuring traffic statistics with sketches, and completing the basic forwarding function.
+The function of these programs mainly include parsing the TCP/IP header, measuring traffic statistics with sketches, and running the basic forwarding function.
 
 You can compile the aforementioned P4 files into target-specific code using the SDE tools.
-When the program is deployed, you need to configure the port and add the flow entry.
+When the program is deployed, you need to configure the port and download FIB (Forwarding Information Base) entries according to your local topology.
+You may follow a Barefoot SDE guidebook on the detailed commands.

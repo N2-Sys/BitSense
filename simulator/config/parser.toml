@@ -20,7 +20,7 @@ output = "../data/records.bin"
 #   Either be "null", "binary", "txt" or "pcap"
 mode = "binary"
 
-# (Conditionally Optional) Output format
+# (Conditionally Optional) Record format
 #   If mode equals "binary" or "txt", this is a must.
 format = [["flowkey", "padding", "timestamp", "length", "padding"],
           [13,         3,         8,           2,        6        ]]
