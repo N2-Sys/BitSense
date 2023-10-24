@@ -34,7 +34,7 @@ Simulator programs also make use of three third-party libraries, namely [eigen](
 Besides, make sure your C++ compiler supports C++17 and the python interpreter version is at least 3.7 to enable essential library features.
 
 ### Build the Simulator
-The following shell script builds the simulator. As long as the dependencies are correctly installed, the script should run successfully.
+The following shell script builds the simulator. As long as the dependencies are correctly installed, the script should run successfully. 
 ```shell
 mkdir -p simulator/build && cd simulator/build
 cmake ..
@@ -60,7 +60,7 @@ Each of them implements a sketch framework indicated by its name. Note that a fi
 
 The above command will read the default runtime configuration (which is in `simulator/config/sketch_config.toml`). If you want to specify a new configuration, run with `./XXX -c [path_to_config_file]` instead. 
 
-You may encounter an error `FATAL| Failed to open record file ../data/records.bin. @data.h:769` at the first run. This is because the default data stream is `../data/records.bin`, but the file nonexists. We provide a sample stream parsed from a truncated CAIDA trace (much smaller than the trace used in the paper). You can download this file from the [Google drive](https://drive.google.com/file/d/1o7YQdNVhQyAAe_naWXBGB7mOYQVmNF5T/view?usp=sharing) (or the [PKU disk](https://disk.pku.edu.cn:443/link/4BF2174500E4481C298BB1E9793CE85F) as a backup) and unzip it to `simluation/data`. Now any sketch framework should run smoothly.
+You may encounter an error `FATAL| Failed to open record file ../data/records.bin. @data.h:769` at the first run. This is because the default data stream is `../data/records.bin`, but the file nonexists. We provide a sample stream down-sampled and parsed from a truncated CAIDA trace (much smaller than the trace used in the paper). You can download this file from the [Google drive](https://drive.google.com/file/d/1o7YQdNVhQyAAe_naWXBGB7mOYQVmNF5T/view?usp=sharing) (or the [PKU disk](https://disk.pku.edu.cn:443/link/4BF2174500E4481C298BB1E9793CE85F) as a backup) and unzip it to `simluation/data`. Now any sketch framework should run smoothly.
 
 ### Sketch Configuration
 Each sketch framework needs a number of configuration parameters to run, e.g., height, width, and input data stream. The default config file (i.e., `simulator/config/sketch_config.toml`) has already specified a sample configuration for each sketch.
@@ -123,12 +123,107 @@ All other sketch frameworks have a similar output format. To display more statis
 
 ![BS CM output](img/BS_CM_output.png)
 
+### Result Reproduction
+
+To facilitate reproducing the results, we make some sketch configurations available (in `simulator/config/PerFlowMeas`) and provide two handy shell scripts (`PerFlowMeas.sh` & `PerFlowMeasHelper.sh` in `simulator/bin`) to run experiments. Below we will introduce the details.
+
+These configurations and scripts run Exp \#1, i.e., per-flow measurement, in the paper.
+Recall that in Exp \#1, we quantify how BitSense improves measurement accuracy using two metrics, namely flow ratio (FR) and average relative error (ARE) given different memory budgets.
+We test six frameworks, namely ES, FR, NS, NZE, PR, and UM.
+Each framework has a raw implementation (i.e., without BitSense) and an optimized version (i.e., with BitSense), so there are $6\times2=12$ implementations in total.
+For each implementation, we evaluate these metrics on eight memory budgets ranging from 0.125 MB to 1 MB, so there are $12\times8=96$ sketch instances to run.
+The only difference from the Exp \#1 in the paper lies in the input stream, where here we use the default `records.bin` that is down-sampled and parsed from a truncated CAIDA trace.
+This input contains $1\times10^5$ distinct flows and $1.09\times10^6$ packets, pretty close to the number of flows and packets in *one epoch* of the original CAIDA trace. Hence, the reproduced results should be close to those in the paper, although there can be some nuance.
+
+
+To run any one of the $96$ sketch instances, goto `simulation/bin`, run `PerFlowMeas.sh` with the specified parameters as follows.
+```console
+> ./PerFlowMeas.sh -h
+OVERVIEW: Run per-flow measurement
+
+USAGE: ./PerFlowMeas.sh -m mem-size -s sketch-name [-v|-h]
+
+OPTIONS:
+  m     Specify the memory budget (0.125m|0.25m|0.375m|0.5m|0.625m|0.75m|0.875m|1m)
+  s     Specify the sketch framework (ES|FR|NS|NZE|PR|UM|BS_ES|BS_FR|BS_NS|BS_NZE|BS_PR|BS_UM)
+  v     Verbose mode
+  h     Print this help message
+```
+As the helper message suggests, you must specify one of the eight memory budgets after the `-m` option and one of the twelve implementations after the `-s` option.
+The script will read the corresponding configuration from `simulator/config/PerFlowMeas` and display measurement results. An example is as follows, where an ES instance allocated 256.114 kB of memory achieves an ARE of 0.92 and an FR of 8.85%.
+```console
+> ./PerFlowMeas.sh -s ES -m 0.25m              
+Mem: 256.114kB, ARE: 0.923303, FR: 8.85333%
+```
+If you want a detailed look at the configuration and the original output of the simulator, use the `-v` option. Below is an example.
+```console
+> ./PerFlowMeas.sh -s ES -m 0.25m -v
+Reading sketch config from "../config/PerFlowMeas/Raw/ES/0.25m.toml":
+
+[ES] # Elastic Sketch
+
+  [ES.para]
+  num_buckets = 5
+  num_per_bucket = 1
+  l_depth = 2
+  l_width = 32748
+
+  [ES.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [ES.test]
+  update = []
+  query = ["PODF", "ARE"]
+  query_podf = 0.001
+======
+... # Simulator output, omitted here
+```
+
+Furthermore, `PerFlowMeasHelper.sh` helps to you to run one of the six framework under all possible memory budgets. Its usage is detailed as follows.
+```console
+> ./PerFlowMeasHelper.sh -h
+OVERVIEW: Helper of per-flow measurement
+          Run sketch on all memory settings
+
+USAGE: ./PerFlowMeasHelper.sh -o output-file -s sketch-name [-p proc-number] [-h]
+
+OPTIONS:
+  s     Specify the sketch framework (ES|FR|NS|NZE|PR|UM|BS_ES|BS_FR|BS_NS|BS_NZE|BS_PR|BS_UM)
+  p     Specify the number of processes to run in parallel (default = 1)
+  o     Specify the output file
+  h     Print this help message
+```
+Specifically, you must specify an output file to store results after `-o` and a sketch framework after `-s`. You can control the maximum number of parallel processes using the `-p` option, whose default value is 1. An example usage is as follows.
+```console
+> ./PerFlowMeasHelper.sh -s BS_ES -o result-BS_ES.txt -p 2
+> cat result-BS_ES.txt
+BS_ES
+Mem: 126.189kB, ARE: 0.341465, FR: 35.7667%
+Mem: 254.166kB, ARE: 0.101142, FR: 70.9833%
+Mem: 384.181kB, ARE: 0.0311635, FR: 85.06%
+Mem: 512.021kB, ARE: 0.0105264, FR: 93.7167%
+Mem: 767.891kB, ARE: 0.0027149, FR: 98.12%
+Mem: 636.357kB, ARE: 0.00497757, FR: 96.7233%
+Mem: 1.00516MB, ARE: 0.00151194, FR: 99.4433%
+Mem: 896.025kB, ARE: 0.00108287, FR: 99.1733%
+```
+Given the sheer number of different configurations, data streams, and setup methods across different experiments, it is a tedious and tough job to give every experiment such handy scripts.
+Exp \#1 is one exemplar and important experiment which demonstrates BitSense's ability, and we have released its full data.
+If you would like further information on the setup and configuration of the rest experiments, please contact the author via email mentioned at the head of this file and describe the intended purpose faithfully.
+Thank you for your understanding :)
+
 ## Part II: Prototype Programs
 
 ### Files
 We provide a simplified version of BitSense data plane P4 programs, which includes the following directories.
 - `countmin/` contains the prototype programs of BitSense with Count-Min sketches (CM).
 - `sketchlearn/` contains the prototype programs of BitSense with SketchLearn (SL).
+
+Similar to the simulation code and experimental setup above, please contact the author for full implementation.
+Please do not forget to state the intended purpose in the email.
+Thank you for your understanding :)
 
 ### Requirements
 
