@@ -181,7 +181,7 @@ Reading sketch config from "../config/PerFlowMeas/Raw/ES/0.25m.toml":
 ... # Simulator output, omitted here
 ```
 
-Furthermore, `PerFlowMeasHelper.sh` helps to you to run one of the six framework under all possible memory budgets. Its usage is detailed as follows.
+Furthermore, `PerFlowMeasHelper.sh` helps you run one of the six framework under all possible memory budgets. Its usage is detailed as follows.
 ```console
 > ./PerFlowMeasHelper.sh -h
 OVERVIEW: Helper of per-flow measurement

@@ -70,8 +70,13 @@ function RunSingleSketch () {
   echo "$1" > "$file"
   for memory in "0.125m" "0.25m" "0.375m" "0.5m" "0.625m" "0.75m" "0.875m" "1m"; do 
     ((i=i%"$2")); ((i++==0)) && wait
+    # Warning: Potential contention
+    #   Fortunately each process appends a single line to the shared file,
+    # and there are at most 8 processes. This implementation is for simp-
+    # licity only.
     ./PerFlowMeas.sh -s "$1" -m $memory >> "$file" &
   done
+  wait
 }
 
 RunSingleSketch $sketch $process

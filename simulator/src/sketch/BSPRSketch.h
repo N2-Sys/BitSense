@@ -264,7 +264,7 @@ void BSPRSketch<key_len, no_layer, T, hash_t>::recover(){
 #ifdef TEST_DECODE_TIME
   MY_TOCK = std::chrono::steady_clock::now();
   MY_TIMER = std::chrono::duration_cast<std::chrono::microseconds>(MY_TOCK - MY_TICK);
-  printf("\nDECODE COST %lldms FOR ALL\n", static_cast<int64_t>(MY_TIMER.count()));
+  printf("\nDECODE COST %jdms FOR ALL\n", static_cast<intmax_t>(MY_TIMER.count()));
 #endif
 
 }
