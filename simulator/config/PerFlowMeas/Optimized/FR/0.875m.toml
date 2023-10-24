@@ -1,0 +1,24 @@
+[FlowRadar] # Flow Radar
+
+  [FlowRadar.para]
+    count_table_num = 55000
+    count_table_hash = 1
+    flow_filter_hash = 10
+    flow_filter_bit = 926000
+  
+  [FlowRadar.data]
+    data = "../data/records.bin"
+    format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+  
+  [FlowRadar.test]
+    update = []
+    decode = ["ARE", "PODF", "RATIO"]
+    decode_podf = 0.001
+  
+  [FlowRadar.bs]
+    flow_cnt_no_ratio = 1e-6
+    flow_width_cnt = [4, 1]
+    flow_no_hash = [3]
+    packet_cnt_no_ratio = 0.11
+    packet_width_cnt = [5, 12]
+    packet_no_hash = [3]

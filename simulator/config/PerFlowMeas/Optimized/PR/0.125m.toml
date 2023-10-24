@@ -1,0 +1,26 @@
+[PR] # PR Sketch
+
+  [PR.para]
+  counter_length = 104000
+  counter_hash_num = 3
+  filter_length = 122352
+  filter_hash_num = 5
+  phi = 10
+
+  [PR.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [PR.test]
+  update = []
+  query = ["ARE", "PODF"]
+  query_podf = 0.001
+
+  [PR.bs]
+  cnt_no_ratio = 0.05
+  width_cnt = [7, 11]
+  no_hash = [3]
+  ch_cm_r = 4
+  ch_cm_w = 500
+

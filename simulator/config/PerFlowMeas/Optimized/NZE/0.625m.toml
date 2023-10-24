@@ -1,0 +1,23 @@
+[NZE] # NZE
+
+  [NZE.para]
+  BFHashNum = 5
+  BFBitsNum = 1579664
+  FSdepth = 7
+  FSwidth = 9010
+  HTLength = 17000
+
+  [NZE.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [NZE.test]
+  update = []
+  query = ["ARE", "PODF"]
+  query_podf = 0.001
+
+  [NZE.bs]
+  cnt_no_ratio = 0.2
+  width_cnt = [5, 14]
+  no_hash = [3]

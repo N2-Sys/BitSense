@@ -9,6 +9,9 @@
 *.out
 *.app
 
+# Local files
+**/.DS_Store
+
 # Temporary files
 tmp.*
 tmp[0-9].*

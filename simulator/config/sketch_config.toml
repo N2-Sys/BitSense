@@ -14,14 +14,6 @@
                                   # But remember to QUOTE it!
                                   # Relative to `build/`.
     format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
-    # Format of records in data
-    # Grammar:
-    #   | Field Name | Viable Length | Further Constraints                   |
-    #   |:-----------|:--------------|:--------------------------------------|
-    #   | flowkey    | 4, 8, 13      | Specify exactly once                  |
-    #   | timestamp  | 1, 2, 4, 8    | In microseconds. Specify at most once |
-    #   | length     | 1, 2, 4, 8    | Specify at most once                  |
-    #   | padding    | > 0           | None                                  |
 
 
 

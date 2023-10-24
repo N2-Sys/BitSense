@@ -1,0 +1,14 @@
+[NS] # NitroSketch
+
+  [NS.para]
+  depth = 6
+  width = 16364
+
+  [NS.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [NS.test]
+  query = ["ARE", "PODF"]
+  query_podf = 0.001

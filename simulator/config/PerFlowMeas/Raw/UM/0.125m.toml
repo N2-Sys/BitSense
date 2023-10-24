@@ -1,0 +1,15 @@
+[UM] # UnivMon
+
+  [UM.para]
+    depth = 1
+    width = 16126
+  
+  [UM.data]
+    data = "../data/records.bin"
+    format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+    cnt_method = "InPacket"
+
+  [UM.test]
+    update = []
+    query = ["ARE", "PODF"]
+    query_podf = 0.001

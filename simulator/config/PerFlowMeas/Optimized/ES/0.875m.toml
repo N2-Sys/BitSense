@@ -1,0 +1,27 @@
+[ES] # Elastic Sketch
+
+  [ES.para]
+  num_buckets = 160
+  num_per_bucket = 2
+  l_depth = 6
+  l_width = 167500
+
+  [ES.data]
+  cnt_method = "InPacket"
+  data = "../data/records.bin"
+  format = [["flowkey", "padding", "timestamp", "length", "padding"], [13, 3, 8, 2, 6]]
+
+  [ES.test]
+  update = []
+  query = ["ARE", "PODF"]
+  query_podf = 0.001
+
+  [ES.bs]
+  cnt_no_ratio = 0.01
+  width_cnt = [13, 5]
+  no_hash = [3]
+  cm_cnt_no_ratio = 0.15
+  cm_width_cnt = [4, 14]
+  cm_no_hash = [3]
+  heavy_cm_r = 3
+  heavy_cm_w = 500
